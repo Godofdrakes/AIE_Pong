@@ -1,13 +1,15 @@
 ﻿#include "AIE.h"
 #include <iostream>
+#include "Paddle.h"
+#include "Ball.h"
 
 
 //Function Protos
 float ABCSquared(float a, float b);
-
+char* int_to_string(int value, unsigned int characters);
 
 //Constants
-const char* WINDOW_NAME = "MOTHER FUCKING PONG YEEEEEAAAAA"; // Awwwwww yeah
+const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop"; // Awwwwww yeah
 const float SCREEN_WIDTH = 800.f;
 const float SCREEN_HEIGHT = 600.f;
 const char* PIXEL_FONT = "./fonts/invaders.fnt";
@@ -16,7 +18,7 @@ const char* PIXEL_FONT = "./fonts/invaders.fnt";
 float paddleWidth = SCREEN_WIDTH / 30; // Base the paddle sizes of the initial size of the window
 float paddleHeight = SCREEN_HEIGHT / 5;
 float paddleSpeed = SCREEN_HEIGHT;
-float paddleOffset = SCREEN_WIDTH / 50; // FINISH THIS
+float paddleOffset = SCREEN_WIDTH / 50;
 
 float ballWidth = SCREEN_WIDTH / 30; // Base the ball size of the initial size of the window
 float ballHeight = ballWidth;
@@ -24,20 +26,16 @@ float ballSpeed = ABCSquared(SCREEN_WIDTH, SCREEN_HEIGHT) / 2500;
 
 float deltaTime; // Time between frames
 
+const int POINTS_OFFSET_X = 50;
+const int POINTS_OFFSET_Y = 50;
 unsigned int points_p1 = 0;
 unsigned int points_p2 = 0;
-
-bool ballUp = true;
-bool ballRight = true;
 
 enum GAMEMODE { // What stage the game is currently in
 	MAINMENU,
 	PLAYING,
 	GAMEOVER,
 };
-
-//Classes
-#include "Classes.h"
 
 //Main loop
 int main(int argc, char* argv[]) {
@@ -114,8 +112,12 @@ int main(int argc, char* argv[]) {
 			DrawSprite(player2.GetSprite());
 			DrawSprite(blob.GetSprite());
 
+			if( points_p1 > 99 ) { points_p1 = 99; }
+			if( points_p2 > 99 ) { points_p2 = 99; }
+			DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+			DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+
 			ClearScreen();
-			cout << blob
 			break;
 
 		case GAMEOVER:
@@ -140,9 +142,13 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-//Class Functions
-
 //Functions
 float ABCSquared(float a, float b) { //pythagorean theorem
 	return ((a*a) + (b*b));
+}
+
+char* int_to_string(int value, unsigned int characters) {
+	char* buffer = new char[characters];
+	itoa(value, buffer, 10);
+	return buffer;
 }
