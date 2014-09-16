@@ -3,43 +3,35 @@
 
 class Paddle {
 private:
-	int sprite;
-	const char* texture = "./images/blob.png";
 
-	float x;
-	float y;
+public:
+	int sprite;
+	char* texture = "./images/blob.png";
 
 	float w;
 	float h;
+
+	float x;
+	float y;
+	float xMax;
+	float yMax;
 
 	float speed;
 
 	int keyUp;
 	int keyDown;
-	int keySlow;
-
-public:
 
 	Paddle(void);
 	~Paddle(void);
 
-	void MakeSprite();
-
 	void SetPos(float set_x, float set_y);
-
+	void SetPosMax(float set_xMax, float set_yMax);
 	void SetSize(float set_w, float set_h);
-
 	void SetSpeed(float set_speed);
+	void SetKeys(int set_keyLeft, int set_keyRight);
 
-	void SetKeys(int set_keyLeft, int set_keyRight, int set_keySlow);
-
-	void Move(float deltaTime);
-
-	float GetX();
-	float GetY();
-	float GetW();
-	float GetH();
-	int GetSprite();
+	void Paddle::MoveUp(float deltaTime);
+	void Paddle::MoveDown(float deltaTime);
 
 };
 

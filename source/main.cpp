@@ -7,6 +7,7 @@
 //Function Protos
 float ABCSquared(float a, float b);
 char* int_to_string(int value, unsigned int characters);
+void BouncePaddle(Ball &theBall, Paddle &thePaddle);
 
 //Constants
 const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop"; // Awwwwww yeah
@@ -28,6 +29,7 @@ float deltaTime; // Time between frames
 
 const int POINTS_OFFSET_X = 50;
 const int POINTS_OFFSET_Y = 50;
+const unsigned int MAX_SCORE = 99;
 unsigned int points_p1 = 0;
 unsigned int points_p2 = 0;
 
@@ -51,26 +53,29 @@ int main(int argc, char* argv[]) {
 	//Setup Player 1
 	Paddle player1;
 	player1.SetPos(paddleOffset, SCREEN_HEIGHT / 2);
+	player1.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
 	player1.SetSize(paddleWidth, paddleHeight);
-	player1.MakeSprite();
+	player1.sprite = CreateSprite(player1.texture, player1.w, player1.h, true);
 	player1.SetSpeed(paddleSpeed);
-	player1.SetKeys(87, 83, 68); //W, S, D
+	player1.SetKeys(GLFW_KEY_W, GLFW_KEY_S); //W, S
 
 
 	//Setup Player 2
 	Paddle player2;
 	player2.SetPos(SCREEN_WIDTH - paddleOffset, SCREEN_HEIGHT / 2);
+	player2.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
 	player2.SetSize(paddleWidth, paddleHeight);
-	player2.MakeSprite();
+	player2.sprite = CreateSprite(player2.texture, player2.w, player2.h, true);
 	player2.SetSpeed(paddleSpeed);
-	player2.SetKeys(73, 75, 74); //I, K, J
+	player2.SetKeys(GLFW_KEY_UP, GLFW_KEY_DOWN); //I, K
 
 
 	//Setup Ball
 	Ball blob;
 	blob.SetPos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	blob.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
 	blob.SetSize(ballWidth, ballHeight);
-	blob.MakeSprite();
+	blob.sprite = CreateSprite(blob.texture, blob.w, blob.h, true);
 	blob.SetSpeed(ballSpeed);
 
 
@@ -87,7 +92,7 @@ int main(int argc, char* argv[]) {
 
 			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2);
 
-			if (IsKeyDown(257) || IsKeyDown(KEY_SPACE)) { eGameMode = PLAYING; }
+			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { eGameMode = PLAYING; }
 
 			ClearScreen();
 			break;
@@ -95,25 +100,39 @@ int main(int argc, char* argv[]) {
 		case PLAYING:
 
 			//Check Player 1 Keys
-			player1.Move(deltaTime);
+			if (IsKeyDown(player1.keyUp)) { player1.MoveUp(deltaTime); }
+			if (IsKeyDown(player1.keyDown)) { player1.MoveDown(deltaTime); }
+			MoveSprite(player1.sprite, player1.x, player1.y);
 
 			//Check Player 2 Keys
-			player2.Move(deltaTime);
+			if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
+			if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+			MoveSprite(player2.sprite, player2.x, player2.y);
 
 
-			blob.CheckSide();
+			switch( blob.CheckSide() ) {
+			case 0:
+				break;
+			case 1:
+				points_p1++;
+				break;
+			case 2:
+				points_p2++;
+				break;
+			}
 			blob.CheckBounce();
-			blob.CheckBounce(player1);
-			blob.CheckBounce(player2);
+			BouncePaddle(blob, player1);
+			BouncePaddle(blob, player2);
 			blob.Move(deltaTime);
+			MoveSprite(blob.sprite, blob.x, blob.y);
 
 
-			DrawSprite(player1.GetSprite());
-			DrawSprite(player2.GetSprite());
-			DrawSprite(blob.GetSprite());
+			DrawSprite(player1.sprite);
+			DrawSprite(player2.sprite);
+			DrawSprite(blob.sprite);
 
-			if( points_p1 > 99 ) { points_p1 = 99; }
-			if( points_p2 > 99 ) { points_p2 = 99; }
+			if( points_p1 > MAX_SCORE ) { points_p1 = MAX_SCORE; }
+			if( points_p2 > MAX_SCORE ) { points_p2 = MAX_SCORE; }
 			DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 			DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 
@@ -151,4 +170,12 @@ char* int_to_string(int value, unsigned int characters) {
 	char* buffer = new char[characters];
 	itoa(value, buffer, 10);
 	return buffer;
+}
+
+void BouncePaddle(Ball &theBall, Paddle &thePaddle) {
+	if( theBall.x < theBall.xMax/2 ) {
+		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { theBall.right = true; }
+	} else {
+		if( (abs(thePaddle.x-(theBall.x+(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { theBall.right = false; }
+	}
 }
