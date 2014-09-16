@@ -3,46 +3,36 @@
 
 class Ball {
 private:
-	int sprite;
-	const char* texture = "./images/blob.png";
 
-	float x;
-	float y;
+public:
+	int sprite;
+	char* texture = "./images/blob.png";
 
 	float w;
 	float h;
+
+	float x;
+	float y;
+	float xMax;
+	float yMax;
 
 	float speed;
 
 	bool up;
 	bool right;
 
-public:
-
 	Ball(void);
 	~Ball(void);
 
-	void MakeSprite();
-
 	void SetPos(float set_x, float set_y);
-
+	void SetPosMax(float set_xMax, float set_yMax);
 	void SetSize(float set_w, float set_h);
-
 	void SetSpeed(float set_speed);
 
-	void CheckSide();
-
+	int CheckSide();
 	void CheckBounce();
 
-	void CheckBounce( Paddle &pad );
-
 	void Move(float deltaTime);
-
-	float GetX();
-	float GetY();
-	float GetW();
-	float GetH();
-	int GetSprite();
 
 };
 

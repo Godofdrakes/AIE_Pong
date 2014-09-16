@@ -90,6 +90,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Ball.cpp" />
+    <ClCompile Include="Paddle.cpp" />
     <ClCompile Include="source\main.cpp" />
   </ItemGroup>
   <ItemGroup>
