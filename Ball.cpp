@@ -18,9 +18,7 @@ void Ball::SetSize(float set_w, float set_h) {
 	h = set_h;
 }
 
-void Ball::SetSpeed(float set_speed) {
-	speed = set_speed;
-}
+void Ball::SetSpeed(float set_speed) { speed = set_speed; }
 
 int Ball::CheckSide() {
 	if( x >= xMax ) { SetPos(xMax / 2, yMax / 2); up = true; right = false; return 1; }

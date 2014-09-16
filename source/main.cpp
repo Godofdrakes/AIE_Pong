@@ -4,7 +4,7 @@
 #include "Ball.h"
 
 
-//Function Protos
+//Function Prototypes
 float ABCSquared(float a, float b);
 char* int_to_string(int value, unsigned int characters);
 void BouncePaddle(Ball &theBall, Paddle &thePaddle);
