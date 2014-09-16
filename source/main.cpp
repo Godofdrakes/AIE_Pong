@@ -5,9 +5,21 @@
 
 
 //Function Prototypes
-float ABCSquared(float a, float b);
-char* int_to_string(int value, unsigned int characters);
-void BouncePaddle(Ball &theBall, Paddle &thePaddle);
+float ABCSquared( float a, float b );
+char* int_to_string( int value, unsigned int characters );
+void BouncePaddle( Ball &theBall, Paddle &thePaddle );
+
+/* -==- AUTOPLAY -==-
+	NONE: Both paddles will move using player input
+	SINGLE: Player2 will move automatically, following the ball. The goal becoms to keep the ball going as long as possible.
+	BOTH: Both players move on their own. Score is disbaled.
+*/
+enum AUTOPLAY {
+	NONE,
+	SINGLE,
+	BOTH,
+};
+AUTOPLAY AutoPlay = NONE;
 
 //Constants
 const char* WINDOW_NAME = "That one game with the ball and the blip and the "; // Awwwwww yeah
@@ -23,7 +35,7 @@ float paddleOffset = SCREEN_WIDTH / 50;
 
 float ballWidth = SCREEN_WIDTH / 30; // Base the ball size of the initial size of the window
 float ballHeight = ballWidth;
-float ballSpeed = ABCSquared(SCREEN_WIDTH, SCREEN_HEIGHT) / 2500;
+float ballSpeed = ABCSquared( SCREEN_WIDTH, SCREEN_HEIGHT ) / 2500;
 
 float deltaTime; // Time between frames
 
@@ -48,7 +60,7 @@ int main(int argc, char* argv[]) {
 	AddFont(PIXEL_FONT);
 
 	//Setup Enum
-	GAMEMODE eGameMode = MAINMENU;
+	GAMEMODE GameMode = MAINMENU;
 
 	//Setup Player 1
 	Paddle player1;
@@ -57,7 +69,7 @@ int main(int argc, char* argv[]) {
 	player1.SetSize(paddleWidth, paddleHeight);
 	player1.sprite = CreateSprite(player1.texture, player1.w, player1.h, true);
 	player1.SetSpeed(paddleSpeed);
-	player1.SetKeys(GLFW_KEY_W, GLFW_KEY_S); //W, S
+	player1.SetKeys(GLFW_KEY_W, GLFW_KEY_S);
 
 
 	//Setup Player 2
@@ -67,7 +79,7 @@ int main(int argc, char* argv[]) {
 	player2.SetSize(paddleWidth, paddleHeight);
 	player2.sprite = CreateSprite(player2.texture, player2.w, player2.h, true);
 	player2.SetSpeed(paddleSpeed);
-	player2.SetKeys(GLFW_KEY_UP, GLFW_KEY_DOWN); //I, K
+	player2.SetKeys(GLFW_KEY_UP, GLFW_KEY_DOWN);
 
 
 	//Setup Ball
@@ -86,25 +98,54 @@ int main(int argc, char* argv[]) {
 		deltaTime = GetDeltaTime();
 		SetFont(PIXEL_FONT);
 
-		switch (eGameMode) {
+		switch(GameMode) {
 
 		case MAINMENU:
 			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2);
 
-			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { eGameMode = PLAYING; }
+			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { GameMode = PLAYING; }
 
 			ClearScreen();
 			break;
 
 		case PLAYING:
 			//Check Player 1 Keys
-			if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
-			if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+			switch(AutoPlay) {
+				case NONE:
+					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+					break;
+				case SINGLE:
+					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+					break;
+				case BOTH:
+					player1.y = blob.y;
+					break;
+				default:
+					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+					break;
+			}
 			MoveSprite(player1.sprite, player1.x, player1.y);
 
 			//Check Player 2 Keys
-			if( IsKeyDown(player2.keyUp) ) { player2.MoveUp(deltaTime); }
-			if( IsKeyDown(player2.keyDown) ) { player2.MoveDown(deltaTime); }
+			switch(AutoPlay) {
+				case NONE:
+					if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
+					if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+					break;
+				case SINGLE:
+					player2.y = blob.y;
+					break;
+				case BOTH:
+					player2.y = blob.y;
+					break;
+				default:
+					if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
+					if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+					break;
+			}
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
 
@@ -112,10 +153,10 @@ int main(int argc, char* argv[]) {
 			case 0:
 				break;
 			case 1:
-				points_p1++;
+				if( AutoPlay == NONE ) { points_p1++; }
 				break;
 			case 2:
-				points_p2++;
+				if( AutoPlay == SINGLE ) { points_p1 = 0; } else { points_p2++; }
 				break;
 			}
 			blob.CheckBounce();
@@ -129,10 +170,24 @@ int main(int argc, char* argv[]) {
 			DrawSprite(player2.sprite);
 			DrawSprite(blob.sprite);
 
+			//Draw Score on screen
 			if( points_p1 > MAX_SCORE ) { points_p1 = MAX_SCORE; }
-			if( points_p2 > MAX_SCORE ) { points_p2 = MAX_SCORE; }
-			DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-			DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+			if( points_p2 > MAX_SCORE) { points_p2 = MAX_SCORE; }
+			switch(AutoPlay) {
+				case NONE:
+					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					break;
+				case SINGLE:
+					DrawString(int_to_string(points_p1, 3), SCREEN_WIDTH/4, SCREEN_HEIGHT/2);
+					break;
+				case BOTH:
+					break;
+				default:
+					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					break;
+			}
 
 			ClearScreen();
 			break;
@@ -142,7 +197,7 @@ int main(int argc, char* argv[]) {
 			break;
 
 		default:
-			eGameMode = MAINMENU;
+			GameMode = MAINMENU;
 			ClearScreen();
 			break;
 
@@ -158,20 +213,27 @@ int main(int argc, char* argv[]) {
 }
 
 //Functions
-float ABCSquared(float a, float b) { //pythagorean theorem
+float ABCSquared( float a, float b ) { //pythagorean theorem
 	return ((a*a) + (b*b));
 }
 
-char* int_to_string(int value, unsigned int characters) {
+char* int_to_string( int value, unsigned int characters ) {
 	char* buffer = new char[characters];
 	itoa(value, buffer, 10);
 	return buffer;
 }
 
-void BouncePaddle(Ball &theBall, Paddle &thePaddle) {
-	if( theBall.x < theBall.xMax/2 ) {
-		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { theBall.right = true; }
+void BouncePaddle( Ball &theBall, Paddle &thePaddle ) {
+	if( theBall.x < SCREEN_WIDTH/2 ) {
+		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) {
+			theBall.x = theBall.x + 1;
+			theBall.right = true;
+			if( AutoPlay == SINGLE ) { points_p1++; }
+		}
 	} else {
-		if( (abs(thePaddle.x-(theBall.x+(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { theBall.right = false; }
+		if( (abs(thePaddle.x-(theBall.x+(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) {
+			theBall.x = theBall.x - 1;
+			theBall.right = false;
+		}
 	}
 }
