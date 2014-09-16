@@ -3,6 +3,8 @@
 
 class Ball {
 private:
+	float xMax;
+	float yMax;
 
 public:
 	int sprite;
@@ -13,9 +15,6 @@ public:
 
 	float x;
 	float y;
-	
-	float xMax;
-	float yMax;
 
 	float speed;
 
