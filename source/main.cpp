@@ -100,13 +100,13 @@ int main(int argc, char* argv[]) {
 		case PLAYING:
 
 			//Check Player 1 Keys
-			if (IsKeyDown(player1.keyUp)) { player1.MoveUp(deltaTime); }
-			if (IsKeyDown(player1.keyDown)) { player1.MoveDown(deltaTime); }
+			if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+			if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
 			MoveSprite(player1.sprite, player1.x, player1.y);
 
 			//Check Player 2 Keys
-			if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
-			if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+			if( IsKeyDown(player2.keyUp) ) { player2.MoveUp(deltaTime); }
+			if( IsKeyDown(player2.keyDown) ) { player2.MoveDown(deltaTime); }
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
 
