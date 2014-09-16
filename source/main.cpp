@@ -10,7 +10,7 @@ char* int_to_string(int value, unsigned int characters);
 void BouncePaddle(Ball &theBall, Paddle &thePaddle);
 
 //Constants
-const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop"; // Awwwwww yeah
+const char* WINDOW_NAME = "That one game with the ball and the blip and the "; // Awwwwww yeah
 const float SCREEN_WIDTH = 800.f;
 const float SCREEN_HEIGHT = 600.f;
 const char* PIXEL_FONT = "./fonts/invaders.fnt";
@@ -98,13 +98,13 @@ int main(int argc, char* argv[]) {
 
 		case PLAYING:
 			//Check Player 1 Keys
-			if (IsKeyDown(player1.keyUp)) { player1.MoveUp(deltaTime); }
-			if (IsKeyDown(player1.keyDown)) { player1.MoveDown(deltaTime); }
+			if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+			if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
 			MoveSprite(player1.sprite, player1.x, player1.y);
 
 			//Check Player 2 Keys
-			if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
-			if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+			if( IsKeyDown(player2.keyUp) ) { player2.MoveUp(deltaTime); }
+			if( IsKeyDown(player2.keyDown) ) { player2.MoveDown(deltaTime); }
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
 
@@ -157,6 +157,8 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
+//Class Functions
+
 //Functions
 float ABCSquared(float a, float b) { //pythagorean theorem
 	return ((a*a) + (b*b));
@@ -167,6 +169,106 @@ char* int_to_string(int value, unsigned int characters) {
 	itoa(value, buffer, 10);
 	return buffer;
 }
+
+
+//Paddle Functions
+Paddle::Paddle(void) {}
+Paddle::~Paddle(void) {}
+
+void Paddle::MakeSprite() { sprite = CreateSprite(texture, w, h, true); }
+
+void Paddle::SetPos(float set_x, float set_y) {
+	x = set_x;
+	y = set_y;
+}
+
+void Paddle::SetSize(float set_w, float set_h) {
+	w = set_w;
+	h = set_h;
+}
+
+void Paddle::SetSpeed(float set_speed) { speed = set_speed; }
+
+void Paddle::SetKeys(int set_keyLeft, int set_keyRight, int set_keySlow) {
+	keyUp = set_keyLeft;
+	keyDown = set_keyRight;
+	keySlow = set_keySlow;
+}
+
+void Paddle::Move(float deltaTime) {
+	if( IsKeyDown(keySlow) && IsKeyDown(keyUp) ) {
+		if(y+(h/2) < SCREEN_HEIGHT) { y += (speed/2) * deltaTime; }
+	} else if( IsKeyDown(keyUp) ) {
+		if(y+(h/2) < SCREEN_HEIGHT) { y += speed * deltaTime; }
+	}
+
+	if( IsKeyDown(keySlow) && IsKeyDown(keyDown) ) {
+		if(y-(h/2) > 0) { y -= (speed/2) * deltaTime; }
+	} else if( IsKeyDown(keyDown) ) {
+		if(y-(h/2) > 0) { y -= speed * deltaTime; }
+	}
+
+	MoveSprite(sprite, x, y);
+
+}
+
+float Paddle::GetX() { return x; }
+float Paddle::GetY() { return y; }
+float Paddle::GetW() { return w; }
+float Paddle::GetH() { return h; }
+int Paddle::GetSprite() { return sprite; }
+
+//Ball Functions
+Ball::Ball(void) {}
+Ball::~Ball(void) {}
+
+void Ball::MakeSprite() {
+	sprite = CreateSprite(texture, w, h, true);
+}
+
+void Ball::SetPos(float set_x, float set_y) {
+	x = set_x;
+	y = set_y;
+}
+
+void Ball::SetSize(float set_w, float set_h) {
+	w = set_w;
+	h = set_h;
+}
+
+void Ball::SetSpeed(float set_speed) {
+	speed = set_speed;
+}
+
+void Ball::CheckSide() {
+	if( x >= SCREEN_WIDTH ) { SetPos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); up = true; right = false; points_p1++; }
+	if( x <= 0 ) { SetPos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2); up = true; right = true; points_p2++; }
+}
+
+void Ball::CheckBounce() {
+	if(y+(h/2) >= SCREEN_HEIGHT) { up = false; }
+	else if(y-(h/2) <= 0) { up = true; }
+}
+
+void Ball::CheckBounce( Paddle &pad ) {
+	if(x<SCREEN_WIDTH/2) {
+		if( (abs(pad.GetX()-(x-(w/2))) <= pad.GetW()/8) && abs(pad.GetY()-y) <= pad.GetH()/2 ) { right = true; }
+	} else {
+		if( (abs(pad.GetX()-(x+(w/2))) <= pad.GetW()/8) && abs(pad.GetY()-y) <= pad.GetH()/2 ) { right = false; }
+	}
+}
+
+void Ball::Move(float deltaTime) {
+	if(right) { x += speed * deltaTime; } else { x -= speed * deltaTime; }
+	if(up) { y += speed * deltaTime; } else { y -= speed * deltaTime; }\
+	MoveSprite(sprite, x, y);
+}
+
+float Ball::GetX() { return x; }
+float Ball::GetY() { return y; }
+float Ball::GetW() { return w; }
+float Ball::GetH() { return h; }
+int Ball::GetSprite() { return sprite; }
 
 void BouncePaddle(Ball &theBall, Paddle &thePaddle) {
 	if( theBall.x < theBall.xMax/2 ) {
