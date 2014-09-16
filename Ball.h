@@ -13,6 +13,7 @@ public:
 
 	float x;
 	float y;
+	
 	float xMax;
 	float yMax;
 
