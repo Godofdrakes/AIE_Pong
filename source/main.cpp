@@ -89,7 +89,6 @@ int main(int argc, char* argv[]) {
 		switch (eGameMode) {
 
 		case MAINMENU:
-
 			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2);
 
 			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { eGameMode = PLAYING; }
@@ -98,7 +97,6 @@ int main(int argc, char* argv[]) {
 			break;
 
 		case PLAYING:
-
 			//Check Player 1 Keys
 			if (IsKeyDown(player1.keyUp)) { player1.MoveUp(deltaTime); }
 			if (IsKeyDown(player1.keyDown)) { player1.MoveDown(deltaTime); }
@@ -140,12 +138,10 @@ int main(int argc, char* argv[]) {
 			break;
 
 		case GAMEOVER:
-
 			ClearScreen();
 			break;
 
 		default:
-
 			eGameMode = MAINMENU;
 			ClearScreen();
 			break;
