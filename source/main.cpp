@@ -157,8 +157,6 @@ int main(int argc, char* argv[]) {
 	return 0;
 }
 
-//Class Functions
-
 //Functions
 float ABCSquared(float a, float b) { //pythagorean theorem
 	return ((a*a) + (b*b));
