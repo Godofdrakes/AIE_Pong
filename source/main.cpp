@@ -19,7 +19,7 @@ enum AUTOPLAY {
 	SINGLE,
 	BOTH,
 };
-AUTOPLAY AutoPlay = SINGLE;
+AUTOPLAY AutoPlay = NONE;
 
 //Constants
 const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop";
