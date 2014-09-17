@@ -3,26 +3,14 @@
 Ball::Ball(void) {}
 Ball::~Ball(void) {}
 
-void Ball::SetPos(float set_x, float set_y) {
-	x = set_x;
-	y = set_y;
-}
-
 void Ball::SetPosMax(float set_xMax, float set_yMax) {
 	xMax = set_xMax;
 	yMax = set_yMax;
 }
 
-void Ball::SetSize(float set_w, float set_h) {
-	w = set_w;
-	h = set_h;
-}
-
-void Ball::SetSpeed(float set_speed) { speed = set_speed; }
-
 int Ball::CheckSide() {
-	if( x >= xMax ) { SetPos(xMax / 2, yMax / 2); up = true; right = false; return 1; }
-	else if( x <= 0 ) { SetPos(xMax / 2, yMax / 2); up = true; right = true; return 2; }
+	if (x >= xMax) { x = xMax / 2; y = yMax / 2; up = true; right = false; speed = speedBase*0.75f; return 1; }
+	else if (x <= 0) { x = xMax / 2; y = yMax / 2; up = true; right = true; speed = speedBase*0.75f; return 2; }
 	else { return 0; }
 }
 

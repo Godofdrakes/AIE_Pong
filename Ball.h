@@ -17,6 +17,7 @@ public:
 	float y;
 
 	float speed;
+	float speedBase;
 
 	bool up;
 	bool right;
@@ -24,10 +25,7 @@ public:
 	Ball(void);
 	~Ball(void);
 
-	void SetPos(float set_x, float set_y);
 	void SetPosMax(float set_xMax, float set_yMax);
-	void SetSize(float set_w, float set_h);
-	void SetSpeed(float set_speed);
 
 	int CheckSide();
 	void CheckBounce();
