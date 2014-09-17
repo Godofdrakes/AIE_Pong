@@ -22,26 +22,28 @@ enum AUTOPLAY {
 AUTOPLAY AutoPlay = NONE;
 
 //Constants
-const char* WINDOW_NAME = "That one game with the ball and the blip and the "; // Awwwwww yeah
+const char* WINDOW_NAME = "That one game with the ball and the blip and the ";
 const float SCREEN_WIDTH = 800.f;
 const float SCREEN_HEIGHT = 600.f;
 const char* PIXEL_FONT = "./fonts/invaders.fnt";
 
-//Variables
-float paddleWidth = SCREEN_WIDTH / 30; // Base the paddle sizes of the initial size of the window
+//Initial values for objects
+//It's all based off the screen's size so the game's sprites scale
+float paddleWidth = SCREEN_WIDTH / 30;
 float paddleHeight = SCREEN_HEIGHT / 5;
 float paddleSpeed = SCREEN_HEIGHT;
 float paddleOffset = SCREEN_WIDTH / 50;
 
-float ballWidth = SCREEN_WIDTH / 30; // Base the ball size of the initial size of the window
+float ballWidth = SCREEN_WIDTH / 30;
 float ballHeight = ballWidth;
-float ballSpeed = ABCSquared( SCREEN_WIDTH, SCREEN_HEIGHT ) / 2500;
+float ballSpeed = ABCSquared( SCREEN_WIDTH, SCREEN_HEIGHT ) / 2000; //Again, basing the speed of the size of the screen
 
 float deltaTime; // Time between frames
 
-const int POINTS_OFFSET_X = 50;
+//Variables for score
+const int POINTS_OFFSET_X = 50; //Used to posiition the score strings on screen
 const int POINTS_OFFSET_Y = 50;
-const unsigned int MAX_SCORE = 99;
+const unsigned int MAX_SCORE = 99; // Don't let it get above this. The char* is only [3]. Bad juju.
 unsigned int points_p1 = 0;
 unsigned int points_p2 = 0;
 
@@ -54,7 +56,7 @@ enum GAMEMODE { // What stage the game is currently in
 //Main loop
 int main(int argc, char* argv[]) {
 
-	//Init the framework
+	//Init the framework and make the window
 	Initialise(SCREEN_WIDTH, SCREEN_HEIGHT, false, WINDOW_NAME);
 	SetBackgroundColour(SColour(0, 0, 0, 255));
 	AddFont(PIXEL_FONT);
@@ -64,44 +66,44 @@ int main(int argc, char* argv[]) {
 
 	//Setup Player 1
 	Paddle player1;
-	player1.SetPos(paddleOffset, SCREEN_HEIGHT / 2);
+	player1.x = paddleOffset; player1.y = SCREEN_HEIGHT / 2;
 	player1.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
-	player1.SetSize(paddleWidth, paddleHeight);
+	player1.w = paddleWidth; player1.h = paddleHeight;
 	player1.sprite = CreateSprite(player1.texture, player1.w, player1.h, true);
-	player1.SetSpeed(paddleSpeed);
-	player1.SetKeys(GLFW_KEY_W, GLFW_KEY_S);
+	player1.speedBase = paddleSpeed; player1.speed = player1.speedBase;
+	player1.keyUp = GLFW_KEY_W; player1.keyDown = GLFW_KEY_S;
 
 
 	//Setup Player 2
 	Paddle player2;
-	player2.SetPos(SCREEN_WIDTH - paddleOffset, SCREEN_HEIGHT / 2);
+	player2.x = SCREEN_WIDTH - paddleOffset; player2.y = SCREEN_HEIGHT / 2;
 	player2.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
-	player2.SetSize(paddleWidth, paddleHeight);
+	player2.w = paddleWidth; player2.h = paddleHeight;
 	player2.sprite = CreateSprite(player2.texture, player2.w, player2.h, true);
-	player2.SetSpeed(paddleSpeed);
-	player2.SetKeys(GLFW_KEY_UP, GLFW_KEY_DOWN);
+	player2.speedBase = paddleSpeed; player2.speed = player2.speedBase;
+	player2.keyUp = GLFW_KEY_UP; player2.keyDown = GLFW_KEY_DOWN;
 
 
-	//Setup Ball
+	//Setup blob
 	Ball blob;
-	blob.SetPos(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
+	blob.x = SCREEN_WIDTH / 2; blob.y = SCREEN_HEIGHT / 2;
 	blob.SetPosMax(SCREEN_WIDTH, SCREEN_HEIGHT);
-	blob.SetSize(ballWidth, ballHeight);
+	blob.w = ballWidth; blob.h = ballHeight;
 	blob.sprite = CreateSprite(blob.texture, blob.w, blob.h, true);
-	blob.SetSpeed(ballSpeed);
+	blob.speedBase = paddleSpeed; blob.speed = blob.speedBase*0.75f;
 
 
 
 	//Game Loop
-	do {
+	do{
 
-		deltaTime = GetDeltaTime();
-		SetFont(PIXEL_FONT);
+		deltaTime = GetDeltaTime(); //Get the time between this frame and the last
+		SetFont(PIXEL_FONT); //Set the font. I don't know why we have to do this every frame.
 
 		switch(GameMode) {
 
 		case MAINMENU:
-			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2);
+			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2); //The badass title screen.
 
 			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { GameMode = PLAYING; }
 
@@ -110,7 +112,7 @@ int main(int argc, char* argv[]) {
 
 		case PLAYING:
 			//Check Player 1 Keys
-			switch(AutoPlay) {
+			switch(AutoPlay) { //IF autoplay is off accept player input, else we don't care about the player
 				case NONE:
 					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
 					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
@@ -130,7 +132,7 @@ int main(int argc, char* argv[]) {
 			MoveSprite(player1.sprite, player1.x, player1.y);
 
 			//Check Player 2 Keys
-			switch(AutoPlay) {
+			switch(AutoPlay) { //See autoplay case of player 1
 				case NONE:
 					if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
 					if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
@@ -149,7 +151,7 @@ int main(int argc, char* argv[]) {
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
 
-			switch( blob.CheckSide() ) {
+			switch( blob.CheckSide() ) { //Which side did the ball go off of, if any.
 			case 0:
 				break;
 			case 1:
@@ -159,8 +161,8 @@ int main(int argc, char* argv[]) {
 				if( AutoPlay == SINGLE ) { points_p1 = 0; } else { points_p2++; }
 				break;
 			}
-			blob.CheckBounce();
-			BouncePaddle(blob, player1);
+			blob.CheckBounce(); //Bounce off the top/bottom
+			BouncePaddle(blob, player1); //Bounce off the paddles
 			BouncePaddle(blob, player2);
 			blob.Move(deltaTime);
 			MoveSprite(blob.sprite, blob.x, blob.y);
@@ -173,7 +175,7 @@ int main(int argc, char* argv[]) {
 			//Draw Score on screen
 			if( points_p1 > MAX_SCORE ) { points_p1 = MAX_SCORE; }
 			if( points_p2 > MAX_SCORE) { points_p2 = MAX_SCORE; }
-			switch(AutoPlay) {
+			switch(AutoPlay) { //Draw both, one, or neither scores depending on how many players there are
 				case NONE:
 					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
@@ -213,27 +215,31 @@ int main(int argc, char* argv[]) {
 }
 
 //Functions
-float ABCSquared( float a, float b ) { //pythagorean theorem
+float ABCSquared( float a, float b ) { //Pythagorean theorem
 	return ((a*a) + (b*b));
 }
 
+//Self contained way to convert int to char*
+//Helpful when turning the score into a string
 char* int_to_string( int value, unsigned int characters ) {
 	char* buffer = new char[characters];
 	itoa(value, buffer, 10);
 	return buffer;
 }
 
+//This is our check for if the ball has hit a paddle and needs to bounce off it.
 void BouncePaddle( Ball &theBall, Paddle &thePaddle ) {
-	if( theBall.x < SCREEN_WIDTH/2 ) {
-		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) {
-			theBall.x = theBall.x + 1;
-			theBall.right = true;
+	float modifier = 0;
+	if( theBall.x < SCREEN_WIDTH/2 ) { //We check which side of the screen the ball is on so we can easily tell which paddle we should run out bounce check on.
+		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { //We do a bit of math to make sure it looks like the left/right side of the ball is bouncing
+			theBall.right = true; //Flip the direct
 			if( AutoPlay == SINGLE ) { points_p1++; }
+			theBall.speed = theBall.speedBase;
 		}
 	} else {
 		if( (abs(thePaddle.x-(theBall.x+(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) {
-			theBall.x = theBall.x - 1;
 			theBall.right = false;
+			theBall.speed = theBall.speedBase;
 		}
 	}
 }

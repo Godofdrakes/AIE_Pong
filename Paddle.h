@@ -17,6 +17,7 @@ public:
 	float y;
 
 	float speed;
+	float speedBase;
 
 	int keyUp;
 	int keyDown;
@@ -24,11 +25,7 @@ public:
 	Paddle(void);
 	~Paddle(void);
 
-	void SetPos(float set_x, float set_y);
 	void SetPosMax(float set_xMax, float set_yMax);
-	void SetSize(float set_w, float set_h);
-	void SetSpeed(float set_speed);
-	void SetKeys(int set_keyLeft, int set_keyRight);
 
 	void Paddle::MoveUp(float deltaTime);
 	void Paddle::MoveDown(float deltaTime);
