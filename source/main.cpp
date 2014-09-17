@@ -1,13 +1,20 @@
 ﻿#include "AIE.h"
 #include <iostream>
+#include <fstream>
+#include <stdlib.h>
 #include "Paddle.h"
 #include "Ball.h"
+
+using namespace std;
 
 
 //Function Prototypes
 float ABCSquared( float a, float b );
 char* int_to_string( int value, unsigned int characters );
 void BouncePaddle( Ball &theBall, Paddle &thePaddle );
+bool FileExists(const char* name);
+void SaveHighscore(char* filename);
+void LoadHighscore(char* filename);
 
 /* -==- AUTOPLAY -==-
 	NONE: Both paddles will move using player input
@@ -21,11 +28,14 @@ enum AUTOPLAY {
 };
 AUTOPLAY AutoPlay = SINGLE;
 
-//Constants
+//System variables
 const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop";
 const float SCREEN_WIDTH = 800.f;
 const float SCREEN_HEIGHT = 600.f;
 const char* PIXEL_FONT = "./fonts/invaders.fnt";
+char* DATA_FILE_NAME = {"data.dat"};
+float deltaTime; // Time between frames
+bool doExit = false;
 
 //Initial values for objects
 //It's all based off the screen's size so the game's sprites scale
@@ -38,16 +48,14 @@ float ballWidth = SCREEN_WIDTH / 30;
 float ballHeight = ballWidth;
 float ballSpeed = ABCSquared( SCREEN_WIDTH, SCREEN_HEIGHT ) / 2000; //Again, basing the speed of the size of the screen
 
-//System variables
-float deltaTime; // Time between frames
-bool doExit = false;
-
 //Variables for score
 const int POINTS_OFFSET_X = 50; //Used to posiition the score strings on screen
 const int POINTS_OFFSET_Y = 50;
 const unsigned int MAX_SCORE = 99; // Don't let it get above this. The char for displaying the score is only [3]. Bad juju.
 unsigned int points_p1 = 0;
 unsigned int points_p2 = 0;
+unsigned int pointsHigh_p1 = 0;
+unsigned int pointsHigh_p2 = 0;
 
 enum GAMEMODE { // What stage the game is currently in
 	MAINMENU,
@@ -62,6 +70,9 @@ int main(int argc, char* argv[]) {
 	Initialise(SCREEN_WIDTH, SCREEN_HEIGHT, false, WINDOW_NAME);
 	SetBackgroundColour(SColour(0, 0, 0, 255));
 	AddFont(PIXEL_FONT);
+
+	//Setup the highscores
+	LoadHighscore(DATA_FILE_NAME);
 
 	//Setup Enum
 	GAMEMODE GameMode = MAINMENU;
@@ -121,9 +132,11 @@ int main(int argc, char* argv[]) {
 			MoveSprite(player1.sprite, player1.x, player1.y);
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
-			DrawSprite(player1.sprite);
-			DrawSprite(player2.sprite);
-			DrawSprite(blob.sprite);
+			for(int i = 0; i < 3; i++) { //Look! For loops!
+				if(i=0) {DrawSprite(player1.sprite);}
+				if(i=1) {DrawSprite(player2.sprite);}
+				if(i=2) {DrawSprite(blob.sprite);}
+			}
 
 			// Begin the game proper
 			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) {
@@ -201,26 +214,38 @@ int main(int argc, char* argv[]) {
 			MoveSprite(blob.sprite, blob.x, blob.y);
 
 
-			DrawSprite(player1.sprite);
-			DrawSprite(player2.sprite);
-			DrawSprite(blob.sprite);
+			for(int i = 0; i < 4; i++) {
+				if(i=1) {DrawSprite(player1.sprite);}
+				if(i=2) {DrawSprite(player2.sprite);}
+				if(i=3) {DrawSprite(blob.sprite);}
+			}
 
-			//Draw Score on screen
+			//Make sure the score doesn't go above a specific ammount
 			if( points_p1 > MAX_SCORE ) { points_p1 = MAX_SCORE; }
 			if( points_p2 > MAX_SCORE) { points_p2 = MAX_SCORE; }
+			//If the score goes above the high score then we need to update accordingly
+			if( points_p1 > pointsHigh_p1 ) {pointsHigh_p1 = points_p1;}
+			if( points_p2 > pointsHigh_p2 ) {pointsHigh_p2 = points_p2;}
+
+			//Draw Score on screen
 			switch(AutoPlay) { //Draw both, one, or neither scores depending on how many players there are
 				case NONE:
 					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 				case SINGLE:
-					DrawString(int_to_string(points_p1, 3), SCREEN_WIDTH/4, SCREEN_HEIGHT/2);
+					DrawString(int_to_string(points_p1, 3), SCREEN_WIDTH/4, SCREEN_HEIGHT/2);;
+					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 				case BOTH:
 					break;
 				default:
-					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);;
+					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 			}
 
@@ -233,13 +258,17 @@ int main(int argc, char* argv[]) {
 
 			DrawString("Really quit? Y/N", (SCREEN_WIDTH / 2)-100, SCREEN_HEIGHT / 2);
 
-			DrawSprite(player1.sprite);
-			DrawSprite(player2.sprite);
-			DrawSprite(blob.sprite);
+
+			for(int i = 0; i < 3; i++) {
+				if(i=0) {DrawSprite(player1.sprite);}
+				if(i=1) {DrawSprite(player2.sprite);}
+				if(i=2) {DrawSprite(blob.sprite);}
+			}
 			ClearScreen();
 
 			if (IsKeyDown(GLFW_KEY_Y)) { doExit = true; }
 			else if (IsKeyDown(GLFW_KEY_N)) { GameMode = PLAYING; }
+			if (IsKeyDown(GLFW_KEY_R)) { pointsHigh_p1 = 0; pointsHigh_p1 = 0; } //Fancy not-all-that-hidden reset button
 
 			break;
 
@@ -249,6 +278,10 @@ int main(int argc, char* argv[]) {
 			break;
 
 		}
+
+		//Save the high schore
+		SaveHighscore(DATA_FILE_NAME);
+
 
 		ClearScreen();
 
@@ -287,4 +320,22 @@ void BouncePaddle( Ball &theBall, Paddle &thePaddle ) {
 			theBall.speed = theBall.speedBase;
 		}
 	}
+}
+
+bool FileExists( const char* name ) { ifstream file(name); return (bool)file; }
+
+void LoadHighscore(char* filename) {
+	if(FileExists(filename)) {
+		fstream file(filename, ios::in | ios::binary);
+		file.read((char*)&pointsHigh_p1, sizeof(pointsHigh_p1));
+		file.read((char*)&pointsHigh_p2, sizeof(pointsHigh_p2));
+		file.close();
+	}
+}
+
+void SaveHighscore(char* filename) {
+	fstream file(filename, ios::out | ios::binary);
+	file.write((char*)&pointsHigh_p1, sizeof(pointsHigh_p1));
+	file.write((char*)&pointsHigh_p2, sizeof(pointsHigh_p2));
+	file.close();
 }
