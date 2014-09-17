@@ -19,10 +19,10 @@ enum AUTOPLAY {
 	SINGLE,
 	BOTH,
 };
-AUTOPLAY AutoPlay = NONE;
+AUTOPLAY AutoPlay = SINGLE;
 
 //Constants
-const char* WINDOW_NAME = "That one game with the ball and the blip and the ";
+const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop";
 const float SCREEN_WIDTH = 800.f;
 const float SCREEN_HEIGHT = 600.f;
 const char* PIXEL_FONT = "./fonts/invaders.fnt";
@@ -43,7 +43,7 @@ float deltaTime; // Time between frames
 //Variables for score
 const int POINTS_OFFSET_X = 50; //Used to posiition the score strings on screen
 const int POINTS_OFFSET_Y = 50;
-const unsigned int MAX_SCORE = 99; // Don't let it get above this. The char* is only [3]. Bad juju.
+const unsigned int MAX_SCORE = 99; // Don't let it get above this. The char for displaying the score is only [3]. Bad juju.
 unsigned int points_p1 = 0;
 unsigned int points_p2 = 0;
 
@@ -103,9 +103,40 @@ int main(int argc, char* argv[]) {
 		switch(GameMode) {
 
 		case MAINMENU:
-			DrawString(WINDOW_NAME, 0, SCREEN_HEIGHT / 2); //The badass title screen.
+			DrawString( WINDOW_NAME, 35, SCREEN_HEIGHT - (SCREEN_HEIGHT / 3) ); //The badass title screen.
+			DrawString( "Press 'SPACE' or 'ENTER' to begin", 175, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 3)*2) ); //The badass title screen.
 
-			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) { GameMode = PLAYING; }
+			//Let's have the game play itself in the backgorund
+			player1.y = blob.y;
+			player2.y = blob.y;
+
+			blob.CheckBounce();
+			BouncePaddle(blob, player1);
+			BouncePaddle(blob, player2);
+			blob.Move(deltaTime);
+
+			MoveSprite(blob.sprite, blob.x, blob.y);
+			MoveSprite(player1.sprite, player1.x, player1.y);
+			MoveSprite(player2.sprite, player2.x, player2.y);
+
+			DrawSprite(player1.sprite);
+			DrawSprite(player2.sprite);
+			DrawSprite(blob.sprite);
+
+			// Begin the game proper
+			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) {
+				//We have to reset the positions and speeds of the objects, otherwise we'll be taking control of a game already in progress.
+				player1.x = paddleOffset; player1.y = SCREEN_HEIGHT / 2;
+				player2.x = SCREEN_WIDTH - paddleOffset; player2.y = SCREEN_HEIGHT / 2;
+
+				blob.speedBase = paddleSpeed; blob.speed = blob.speedBase*0.75f;
+				blob.x = SCREEN_WIDTH / 2; blob.y = SCREEN_HEIGHT / 2;
+				blob.up = true;
+				blob.right = true;
+
+				GameMode = PLAYING; //And begin
+			}
+
 
 			ClearScreen();
 			break;
