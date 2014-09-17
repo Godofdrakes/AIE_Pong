@@ -19,7 +19,7 @@ enum AUTOPLAY {
 	SINGLE,
 	BOTH,
 };
-AUTOPLAY AutoPlay = NONE;
+AUTOPLAY AutoPlay = SINGLE;
 
 //Constants
 const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop";
@@ -38,7 +38,9 @@ float ballWidth = SCREEN_WIDTH / 30;
 float ballHeight = ballWidth;
 float ballSpeed = ABCSquared( SCREEN_WIDTH, SCREEN_HEIGHT ) / 2000; //Again, basing the speed of the size of the screen
 
+//System variables
 float deltaTime; // Time between frames
+bool doExit = false;
 
 //Variables for score
 const int POINTS_OFFSET_X = 50; //Used to posiition the score strings on screen
@@ -222,11 +224,23 @@ int main(int argc, char* argv[]) {
 					break;
 			}
 
+			if (IsKeyDown(GLFW_KEY_ESCAPE)) { GameMode = GAMEOVER; }
+
 			ClearScreen();
 			break;
 
 		case GAMEOVER:
+
+			DrawString("Really quit? Y/N", (SCREEN_WIDTH / 2)-100, SCREEN_HEIGHT / 2);
+
+			DrawSprite(player1.sprite);
+			DrawSprite(player2.sprite);
+			DrawSprite(blob.sprite);
 			ClearScreen();
+
+			if (IsKeyDown(GLFW_KEY_Y)) { doExit = true; }
+			else if (IsKeyDown(GLFW_KEY_N)) { GameMode = PLAYING; }
+
 			break;
 
 		default:
@@ -238,7 +252,7 @@ int main(int argc, char* argv[]) {
 
 		ClearScreen();
 
-	} while (!FrameworkUpdate());
+	} while (!FrameworkUpdate() && !doExit);
 
 	Shutdown();
 
