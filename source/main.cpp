@@ -236,14 +236,14 @@ int main(int argc, char* argv[]) {
 					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 				case SINGLE:
-					DrawString(int_to_string(points_p1, 3), SCREEN_WIDTH/4, SCREEN_HEIGHT/2);;
+					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 				case BOTH:
 					break;
 				default:
-					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);;
-					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
 					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
