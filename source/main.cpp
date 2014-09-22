@@ -132,10 +132,10 @@ int main(int argc, char* argv[]) {
 			MoveSprite(player1.sprite, player1.x, player1.y);
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
-			for(int i = 0; i < 3; i++) { //Look! For loops!
-				if(i=0) {DrawSprite(player1.sprite);}
-				if(i=1) {DrawSprite(player2.sprite);}
-				if(i=2) {DrawSprite(blob.sprite);}
+			for(int i = 1; i < 4; i++) { //Look! For loops!
+				if(i=1) {DrawSprite(player1.sprite);}
+				if(i=2) {DrawSprite(player2.sprite);}
+				if(i=3) {DrawSprite(blob.sprite);}
 			}
 
 			// Begin the game proper
@@ -214,7 +214,7 @@ int main(int argc, char* argv[]) {
 			MoveSprite(blob.sprite, blob.x, blob.y);
 
 
-			for(int i = 0; i < 4; i++) {
+			for(int i = 1; i < 4; i++) {
 				if(i=1) {DrawSprite(player1.sprite);}
 				if(i=2) {DrawSprite(player2.sprite);}
 				if(i=3) {DrawSprite(blob.sprite);}
@@ -259,10 +259,10 @@ int main(int argc, char* argv[]) {
 			DrawString("Really quit? Y/N", (SCREEN_WIDTH / 2)-100, SCREEN_HEIGHT / 2);
 
 
-			for(int i = 0; i < 3; i++) {
-				if(i=0) {DrawSprite(player1.sprite);}
-				if(i=1) {DrawSprite(player2.sprite);}
-				if(i=2) {DrawSprite(blob.sprite);}
+			for(int i = 1; i < 4; i++) {
+				if(i = 1) { DrawSprite(player1.sprite); }
+				if(i = 2) { DrawSprite(player2.sprite); }
+				if(i = 3) { DrawSprite(blob.sprite); }
 			}
 			ClearScreen();
 
