@@ -11,10 +11,11 @@ using namespace std;
 //Function Prototypes
 float ABCSquared( float a, float b );
 char* int_to_string( int value, unsigned int characters );
-void BouncePaddle( Ball &theBall, Paddle &thePaddle );
 bool FileExists(const char* name);
 void SaveHighscore(char* filename);
 void LoadHighscore(char* filename);
+void PaddleBounce( Ball &theBall, int bounce );
+int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle );
 
 /* -==- AUTOPLAY -==-
 	NONE: Both paddles will move using player input
@@ -124,8 +125,8 @@ int main(int argc, char* argv[]) {
 			player2.y = blob.y;
 
 			blob.CheckBounce();
-			BouncePaddle(blob, player1);
-			BouncePaddle(blob, player2);
+			PaddleBounce( blob, PaddleBounceCheck(blob, player1) );
+			PaddleBounce( blob, PaddleBounceCheck(blob, player2) );
 			blob.Move(deltaTime);
 
 			MoveSprite(blob.sprite, blob.x, blob.y);
@@ -208,8 +209,9 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			blob.CheckBounce(); //Bounce off the top/bottom
-			BouncePaddle(blob, player1); //Bounce off the paddles
-			BouncePaddle(blob, player2);
+			PaddleBounce( blob, PaddleBounceCheck(blob, player1) );
+			PaddleBounce( blob, PaddleBounceCheck(blob, player2) );
+
 			blob.Move(deltaTime);
 			MoveSprite(blob.sprite, blob.x, blob.y);
 
@@ -305,21 +307,46 @@ char* int_to_string( int value, unsigned int characters ) {
 	return buffer;
 }
 
-//This is our check for if the ball has hit a paddle and needs to bounce off it.
-void BouncePaddle( Ball &theBall, Paddle &thePaddle ) {
-	float modifier = 0;
-	if( theBall.x < SCREEN_WIDTH/2 ) { //We check which side of the screen the ball is on so we can easily tell which paddle we should run out bounce check on.
-		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/4) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { //We do a bit of math to make sure it looks like the left/right side of the ball is bouncing
-			theBall.right = true; //Flip the direct
+//This is the function that actually makes the ball bounce off a paddle
+void PaddleBounce( Ball &theBall, int bounce ) {
+	switch( bounce ) {
+		case 0: // Did not bounce
+			break;
+
+		case 1: // Bounce off left paddle (player1)
+			theBall.right = true;
 			if( AutoPlay == SINGLE ) { points_p1++; }
 			theBall.speed = theBall.speedBase;
-		}
-	} else {
-		if( (abs(thePaddle.x-(theBall.x+(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) {
+			break;
+
+		case 2: // Bounce off right paddle (player2)
 			theBall.right = false;
 			theBall.speed = theBall.speedBase;
-		}
+			break;
+
+		default: // Did not bounce
+			break;
 	}
+}
+
+//New and improved collision checking thingamawhat
+int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle ) { // Returns bounce of right paddle (2) or left paddle (1) or none (0)
+	if ( abs(theBall.x + (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y + (theBall.h/2) - thePaddle.y) <= thePaddle.h/2 ) { // Check top right corner
+		cout << 2 << endl << endl;
+		return 2;
+	} else if ( abs(theBall.x + (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y - (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check bottom right corner
+		cout << 2 << endl << endl;
+		return 2;
+	} else if ( abs(theBall.x - (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y + (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check top left corner
+		cout << 1 << endl << endl;
+		return 1;
+	} else if ( abs(theBall.x - (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y - (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check bottom left corner
+		cout << 1 << endl << endl;
+		return 1;
+	} else {
+		return 0;
+	}
+
 }
 
 bool FileExists( const char* name ) { ifstream file(name); return (bool)file; }
