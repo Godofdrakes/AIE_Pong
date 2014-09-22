@@ -15,7 +15,7 @@ char* merge_strings( char* stringA, char* stringB, unsigned int characters );
 bool FileExists(const char* name);
 void SaveHighscore(char* filename);
 void LoadHighscore(char* filename);
-void PaddleBounce( Ball &theBall, int bounce );
+void PaddleBounce( Ball &theBall, Paddle &thePaddle, int bounce );
 int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle );
 void ResetPositions( Ball &theBall, Paddle &player1, Paddle &player2);
 
@@ -128,8 +128,8 @@ int main(int argc, char* argv[]) {
 			player2.y = blob.y;
 
 			blob.CheckBounce();
-			PaddleBounce( blob, PaddleBounceCheck(blob, player1) );
-			PaddleBounce( blob, PaddleBounceCheck(blob, player2) );
+			PaddleBounce( blob, player1, PaddleBounceCheck(blob, player1) );
+			PaddleBounce( blob, player2, PaddleBounceCheck(blob, player2) );
 			blob.Move(deltaTime);
 
 			MoveSprite(blob.sprite, blob.x, blob.y);
@@ -213,8 +213,8 @@ int main(int argc, char* argv[]) {
 				break;
 			}
 			blob.CheckBounce(); //Bounce off the top/bottom
-			PaddleBounce( blob, PaddleBounceCheck(blob, player1) );
-			PaddleBounce( blob, PaddleBounceCheck(blob, player2) );
+			PaddleBounce( blob, player1, PaddleBounceCheck(blob, player1) );
+			PaddleBounce( blob, player2, PaddleBounceCheck(blob, player2) );
 
 			blob.Move(deltaTime);
 			MoveSprite(blob.sprite, blob.x, blob.y);
@@ -319,7 +319,7 @@ char* merge_strings( char* stringA, char* stringB, unsigned int characters ) {
 }
 
 //This is the function that actually makes the ball bounce off a paddle
-void PaddleBounce( Ball &theBall, int bounce ) {
+void PaddleBounce( Ball &theBall, Paddle &thePaddle, int bounce ) {
 	switch( bounce ) {
 		case 0: // Did not bounce
 			break;
@@ -328,11 +328,13 @@ void PaddleBounce( Ball &theBall, int bounce ) {
 			theBall.right = true;
 			if( HumanPlayers == SINGLE ) { points_p1++; }
 			theBall.speed = theBall.speedBase;
+			theBall.x = thePaddle.x + (theBall.x/2) + (thePaddle.x/2) + 2;
 			break;
 
 		case 2: // Bounce off right paddle (player2)
 			theBall.right = false;
 			theBall.speed = theBall.speedBase;
+			theBall.x = SCREEN_WIDTH - (SCREEN_WIDTH - thePaddle.x) - (theBall.w/2) - (thePaddle.w/2) - 2;
 			break;
 
 		default: // Did not bounce
