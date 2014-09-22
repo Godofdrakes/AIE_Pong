@@ -11,6 +11,7 @@ using namespace std;
 //Function Prototypes
 float ABCSquared( float a, float b );
 char* int_to_string( int value, unsigned int characters );
+char* merge_strings( char* stringA, char* stringB, unsigned int characters );
 bool FileExists(const char* name);
 void SaveHighscore(char* filename);
 void LoadHighscore(char* filename);
@@ -18,17 +19,17 @@ void PaddleBounce( Ball &theBall, int bounce );
 int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle );
 void ResetPositions( Ball &theBall, Paddle &player1, Paddle &player2);
 
-/* -==- AUTOPLAY -==-
-	NONE: Both paddles will move using player input
+/* -==- HUMANPLAYERS -==-
+	BOTH: Both paddles will move using player input
 	SINGLE: Player2 will move automatically, following the ball. The goal becoms to keep the ball going as long as possible.
-	BOTH: Both players move on their own. Score is disbaled.
+	NONE: Both paddles move on their own. Score is disbaled.
 */
-enum AUTOPLAY {
+enum HUMANPLAYERS {
 	NONE,
 	SINGLE,
 	BOTH,
 };
-AUTOPLAY AutoPlay = SINGLE;
+HUMANPLAYERS HumanPlayers = SINGLE;
 
 //System variables
 const char* WINDOW_NAME = "That one game with the ball and the blip and the bloop";
@@ -118,8 +119,9 @@ int main(int argc, char* argv[]) {
 		switch(GameMode) {
 
 		case MAINMENU:
-			DrawString( WINDOW_NAME, 35, SCREEN_HEIGHT - (SCREEN_HEIGHT / 3) ); //The badass title screen.
-			DrawString( "Press 'SPACE' or 'ENTER' to begin", 175, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 3)*2) ); //The badass title screen.
+			DrawString( WINDOW_NAME, 35, SCREEN_HEIGHT - (SCREEN_HEIGHT / 10) ); //The badass title screen.
+			DrawString( "Press 'SPACE' or 'ENTER' to begin", 175, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 10)*2) );
+			DrawString( "Press '0', '1', or '2' to choose the number of players", 60, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 10)*3)  );
 
 			//Let's have the game play itself in the backgorund
 			player1.y = blob.y;
@@ -140,6 +142,18 @@ int main(int argc, char* argv[]) {
 				if(i=3) {DrawSprite(blob.sprite);}
 			}
 
+			//Main menu option to change autoplay setting
+			if (IsKeyDown(GLFW_KEY_0) || IsKeyDown(GLFW_KEY_KP_0)) {
+				HumanPlayers = NONE;
+			} else if (IsKeyDown(GLFW_KEY_1) || IsKeyDown(GLFW_KEY_KP_1)) {
+				HumanPlayers = SINGLE;
+			} else if (IsKeyDown(GLFW_KEY_2) || IsKeyDown(GLFW_KEY_KP_2)) {
+				HumanPlayers = BOTH;
+			}
+
+			//DrawString(int_to_string(HumanPlayers, 2), 60, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 10) * 4));
+			DrawString(merge_strings("Human Players: ", int_to_string(HumanPlayers, 2), 100), 60, SCREEN_HEIGHT - ((SCREEN_HEIGHT / 10) * 4));
+
 			// Begin the game proper
 			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) {
 				//We have to reset the positions and speeds of the objects, otherwise we'll be taking control of a game already in progress.
@@ -153,54 +167,49 @@ int main(int argc, char* argv[]) {
 			break;
 
 		case PLAYING:
-			//Check Player 1 Keys
-			switch(AutoPlay) { //IF autoplay is off accept player input, else we don't care about the player
-				case NONE:
-					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
-					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
-					break;
-				case SINGLE:
-					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
-					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
-					break;
+			//Check Movement Keys
+			switch(HumanPlayers) {
 				case BOTH:
-					player1.y = blob.y;
-					break;
-				default:
 					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
 					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+					if( IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
+					if( IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
 					break;
-			}
-			MoveSprite(player1.sprite, player1.x, player1.y);
 
-			//Check Player 2 Keys
-			switch(AutoPlay) { //See autoplay case of player 1
-				case NONE:
-					if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
-					if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
-					break;
 				case SINGLE:
+					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
 					player2.y = blob.y;
 					break;
-				case BOTH:
+
+				case NONE:
+					player1.y = blob.y;
 					player2.y = blob.y;
 					break;
+
 				default:
-					if (IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
-					if (IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
+					if( IsKeyDown(player1.keyUp) ) { player1.MoveUp(deltaTime); }
+					if( IsKeyDown(player1.keyDown) ) { player1.MoveDown(deltaTime); }
+					if( IsKeyDown(player2.keyUp)) { player2.MoveUp(deltaTime); }
+					if( IsKeyDown(player2.keyDown)) { player2.MoveDown(deltaTime); }
 					break;
 			}
 			MoveSprite(player2.sprite, player2.x, player2.y);
+			MoveSprite(player1.sprite, player1.x, player1.y);
 
 
 			switch( blob.CheckSide() ) { //Which side did the ball go off of, if any.
 			case 0:
 				break;
 			case 1:
-				if( AutoPlay == NONE ) { points_p1++; }
+				if( HumanPlayers != NONE ) { points_p1++; }
 				break;
 			case 2:
-				if( AutoPlay == SINGLE ) { points_p1 = 0; } else { points_p2++; }
+				if( HumanPlayers == SINGLE ) {
+					points_p1 = 0;
+				} else if( HumanPlayers == BOTH ) {
+					points_p2++;
+				}
 				break;
 			}
 			blob.CheckBounce(); //Bounce off the top/bottom
@@ -225,24 +234,24 @@ int main(int argc, char* argv[]) {
 			if( points_p2 > pointsHigh_p2 ) {pointsHigh_p2 = points_p2;}
 
 			//Draw Score on screen
-			switch(AutoPlay) { //Draw both, one, or neither scores depending on how many players there are
-				case NONE:
-					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
-					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+			switch(HumanPlayers) { //Draw both, one, or neither scores depending on how many players there are
+				case BOTH:
+					DrawString(int_to_string(points_p1, 2), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 2), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(pointsHigh_p1, 2), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+					DrawString(int_to_string(pointsHigh_p2, 2), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 				case SINGLE:
-					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(pointsHigh_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+					DrawString(int_to_string(points_p1, 2), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(pointsHigh_p1, 2), POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
-				case BOTH:
+				case NONE:
 					break;
 				default:
-					DrawString(int_to_string(points_p1, 3), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(points_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
-					DrawString(int_to_string(pointsHigh_p2, 3), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
+					DrawString(int_to_string(points_p1, 2), POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 2), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(points_p2, 2), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - POINTS_OFFSET_Y);
+					DrawString(int_to_string(pointsHigh_p2, 2), SCREEN_WIDTH - POINTS_OFFSET_X, SCREEN_HEIGHT - (POINTS_OFFSET_Y*2));
 					break;
 			}
 
@@ -297,8 +306,15 @@ float ABCSquared( float a, float b ) { //Pythagorean theorem
 //Self contained way to convert int to char*
 //Helpful when turning the score into a string
 char* int_to_string( int value, unsigned int characters ) {
-	char* buffer = new char[characters];
+	char* buffer = new char[characters+1];
 	itoa(value, buffer, 10);
+	return buffer;
+}
+
+char* merge_strings( char* stringA, char* stringB, unsigned int characters ) {
+	char* buffer = new char[characters+1];
+	strcpy(buffer, stringA);
+	strcat(buffer, stringB);
 	return buffer;
 }
 
@@ -310,7 +326,7 @@ void PaddleBounce( Ball &theBall, int bounce ) {
 
 		case 1: // Bounce off left paddle (player1)
 			theBall.right = true;
-			if( AutoPlay == SINGLE ) { points_p1++; }
+			if( HumanPlayers == SINGLE ) { points_p1++; }
 			theBall.speed = theBall.speedBase;
 			break;
 
