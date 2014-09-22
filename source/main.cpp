@@ -16,6 +16,7 @@ void SaveHighscore(char* filename);
 void LoadHighscore(char* filename);
 void PaddleBounce( Ball &theBall, int bounce );
 int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle );
+void ResetPositions( Ball &theBall, Paddle &player1, Paddle &player2);
 
 /* -==- AUTOPLAY -==-
 	NONE: Both paddles will move using player input
@@ -133,7 +134,7 @@ int main(int argc, char* argv[]) {
 			MoveSprite(player1.sprite, player1.x, player1.y);
 			MoveSprite(player2.sprite, player2.x, player2.y);
 
-			for(int i = 1; i < 4; i++) { //Look! For loops!
+			for(int i = 1; i <= 3; i++) { //Look! For loops!
 				if(i=1) {DrawSprite(player1.sprite);}
 				if(i=2) {DrawSprite(player2.sprite);}
 				if(i=3) {DrawSprite(blob.sprite);}
@@ -142,13 +143,7 @@ int main(int argc, char* argv[]) {
 			// Begin the game proper
 			if (IsKeyDown(GLFW_KEY_SPACE) || IsKeyDown(GLFW_KEY_ENTER) || IsKeyDown(GLFW_KEY_KP_ENTER)) {
 				//We have to reset the positions and speeds of the objects, otherwise we'll be taking control of a game already in progress.
-				player1.x = paddleOffset; player1.y = SCREEN_HEIGHT / 2;
-				player2.x = SCREEN_WIDTH - paddleOffset; player2.y = SCREEN_HEIGHT / 2;
-
-				blob.speedBase = paddleSpeed; blob.speed = blob.speedBase*0.75f;
-				blob.x = SCREEN_WIDTH / 2; blob.y = SCREEN_HEIGHT / 2;
-				blob.up = true;
-				blob.right = true;
+				ResetPositions(blob, player1, player2);
 
 				GameMode = PLAYING; //And begin
 			}
@@ -332,16 +327,16 @@ void PaddleBounce( Ball &theBall, int bounce ) {
 //New and improved collision checking thingamawhat
 int PaddleBounceCheck( Ball &theBall, Paddle &thePaddle ) { // Returns bounce of right paddle (2) or left paddle (1) or none (0)
 	if ( abs(theBall.x + (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y + (theBall.h/2) - thePaddle.y) <= thePaddle.h/2 ) { // Check top right corner
-		cout << 2 << endl << endl;
+		//cout << 2 << endl << endl;
 		return 2;
 	} else if ( abs(theBall.x + (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y - (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check bottom right corner
-		cout << 2 << endl << endl;
+		//cout << 2 << endl << endl;
 		return 2;
 	} else if ( abs(theBall.x - (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y + (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check top left corner
-		cout << 1 << endl << endl;
+		//cout << 1 << endl << endl;
 		return 1;
 	} else if ( abs(theBall.x - (theBall.w/2) - thePaddle.x ) <= thePaddle.w/2 && abs(theBall.y - (theBall.h/2) - thePaddle.y) <= thePaddle.h/2) { // Check bottom left corner
-		cout << 1 << endl << endl;
+		//cout << 1 << endl << endl;
 		return 1;
 	} else {
 		return 0;
@@ -365,4 +360,14 @@ void SaveHighscore(char* filename) {
 	file.write((char*)&pointsHigh_p1, sizeof(pointsHigh_p1));
 	file.write((char*)&pointsHigh_p2, sizeof(pointsHigh_p2));
 	file.close();
+}
+
+void ResetPositions( Ball &theBall, Paddle &paddle1, Paddle &paddle2) {
+	paddle1.x = paddleOffset; paddle1.y = SCREEN_HEIGHT / 2;
+	paddle2.x = SCREEN_WIDTH - paddleOffset; paddle2.y = SCREEN_HEIGHT / 2;
+
+	theBall.speedBase = paddleSpeed; theBall.speed = theBall.speedBase*0.75f;
+	theBall.x = SCREEN_WIDTH / 2; theBall.y = SCREEN_HEIGHT / 2;
+	theBall.up = true;
+	theBall.right = true;
 }
