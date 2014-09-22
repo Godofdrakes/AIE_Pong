@@ -309,7 +309,7 @@ char* int_to_string( int value, unsigned int characters ) {
 void BouncePaddle( Ball &theBall, Paddle &thePaddle ) {
 	float modifier = 0;
 	if( theBall.x < SCREEN_WIDTH/2 ) { //We check which side of the screen the ball is on so we can easily tell which paddle we should run out bounce check on.
-		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/8) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { //We do a bit of math to make sure it looks like the left/right side of the ball is bouncing
+		if( (abs(thePaddle.x-(theBall.x-(theBall.w/2))) <= thePaddle.w/4) && abs(thePaddle.y-theBall.y) <= thePaddle.h/2 ) { //We do a bit of math to make sure it looks like the left/right side of the ball is bouncing
 			theBall.right = true; //Flip the direct
 			if( AutoPlay == SINGLE ) { points_p1++; }
 			theBall.speed = theBall.speedBase;
